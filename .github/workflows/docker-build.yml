@@ -1,25 +1,37 @@
-name: Build Docker Image
+name: Build and Deploy Docker Image
 
 on:
   push:
     branches:
-      - main  # Trigger this workflow on pushes to the main branch
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # The build runs on an Ubuntu virtual machine
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3  # This checks out your repo content
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3  # Enables advanced Docker build features
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
-      - name: Build Docker Image
-        run: |
-          docker build -t sample-python-multistage .  # Builds the Docker image with the given tag
+    - name: Build Docker Image
+      run: |
+        docker build -t myapp-image .
 
-      - name: Show Docker Images
-        run: |
-          docker images | grep sample-python-multistage  # Optional: displays your image info
+    # Now deploy to the VM
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.GCP_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.GCP_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to VM
+      run: |
+        ssh ${{ secrets.GCP_USER }}@${{ secrets.GCP_HOST }} << 'EOF'
+          docker stop myapp || true
+          docker rm myapp || true
+          docker run -d --name myapp -p 80:80 myapp-image
+        EOF
