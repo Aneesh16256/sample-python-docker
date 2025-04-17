@@ -1,0 +1,25 @@
+name: Build Docker Image
+
+on:
+  push:
+    branches:
+      - main  # Trigger this workflow on pushes to the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # The build runs on an Ubuntu virtual machine
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3  # This checks out your repo content
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3  # Enables advanced Docker build features
+
+      - name: Build Docker Image
+        run: |
+          docker build -t sample-python-multistage .  # Builds the Docker image with the given tag
+
+      - name: Show Docker Images
+        run: |
+          docker images | grep sample-python-multistage  # Optional: displays your image info
