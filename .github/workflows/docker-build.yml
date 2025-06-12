@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: self-hosted  # Changed from ubuntu-latest to use your self-hosted runners
+    runs-on: self-hosted  # Changed from ubuntu-latest to use your self-hosted runner
 
     steps:
     - name: Checkout code
